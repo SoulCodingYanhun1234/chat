@@ -2,9 +2,9 @@
   import { page } from '$app/stores';
   import { browser } from '$app/environment';
   import { fade } from 'svelte/transition';
-  if (browser && (!$page.data.pms.includes(new URL(location.href).hostname) || !$page.data.pms.includes(new URL(window.top.location.href).hostname))) {
-    location.href = "/error/toperror"
-  };
+  // if (browser && (!$page.data.pms.includes(new URL(location.href).hostname) || !$page.data.pms.includes(new URL(window.top.location.href).hostname))) {
+  //   location.href = "/error/toperror"
+  // };
   let createBubble, setBubblel, createErrorBubble, onEnter, appendHistory, initHistory, resumeHistory, clearConversation, inputText = "";
   let initMessageList = ["Hi, I'm AOOS Ai Assistant, is there anything I can do to help?", "Hello! How can I help you?"];
   let initMessage = function () {
