@@ -6,7 +6,7 @@ import { TextLoader } from "langchain/document_loaders/fs/text";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 
-const openAIApiKey = "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";
+const openAIApiKey = "sk-";
 
 async function run() {
   // Create the models and chain
