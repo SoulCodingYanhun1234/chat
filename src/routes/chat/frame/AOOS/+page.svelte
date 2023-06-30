@@ -1,13 +1,10 @@
 <script>
-  import { page } from '$app/stores';
   import { browser } from '$app/environment';
   import { fade } from 'svelte/transition';
-  // if (browser && (!$page.data.pms.includes(new URL(location.href).hostname) || !$page.data.pms.includes(new URL(window.top.location.href).hostname))) {
-  //   location.href = "/error/toperror"
-  // };
   let createBubble, setBubblel, createErrorBubble, onEnter, appendHistory, initHistory, resumeHistory, clearConversation, inputText = "";
   let initMessageList = ["Hi, I'm AOOS Ai Assistant, is there anything I can do to help?", "Hello! How can I help you?"];
   let isFocused = false;
+  let isSending = false;
   let initMessage = function () {
     return initMessageList[Math.floor(Math.random() * initMessageList.length)];
   }
@@ -36,11 +33,12 @@
           setBubblel(data.id, { text: data.message });
         } else if (data.sys && data.result && data.message == "finish") {
           NomenMain.wsSending = false;
+          isSending = false;
           appendHistory(data.result.text, data.result.id, 0);
         }
       };
       ws.onerror = function (e) {
-        createErrorBubble("Something went wrong, please check your console. ");
+        createErrorBubble("Something went wrong, please refresh");
         console.error(e);
       }
     }
@@ -61,9 +59,10 @@
           class="${["relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl",
           "relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"][side]} ${error ? "text-red-600" : ""}"
         >
-          <div id="${id}">${text}</div>
+          <div id="${id}"></div>
         </div>`;
       document.querySelector("#nomen-main-chat-body").appendChild(bubble);
+      document.getElementById(id).innerText=text;
     };
     window.setBubblel = setBubblel = function (id, { text }) {
       document.getElementById(id).innerText = text;
@@ -109,7 +108,7 @@
         if (!window.NomenMain.ws) {
           createErrorBubble("Connection lost, trying to reconnect... ");
           appendHistory(inputText.toString(), Date.now(), 1);
-          setTimeout(() => window.location.reload(), 5 * 1000)
+          setTimeout(() => window.location.reload(), 2 * 1000)
         } else {
           try {
             let pmdList = JSON.parse(localStorage.getItem(key)).history;
@@ -117,6 +116,7 @@
             ws.send(JSON.stringify({ message: inputText.toString(), parentMessageId: parentMessageId || undefined }));
             appendHistory(inputText.toString(), Date.now(), 1);
             NomenMain.wsSending = true;
+            isSending = true;
           } catch (err) {
             createErrorBubble(`Sorry, something went wrong, Error Message: ${err.message}`)
           }
@@ -133,7 +133,7 @@
   }
 </script>
 
-
+<title>AOOS AI Assistant</title>
 <div class="flex h-screen antialiased text-gray-800">
   <div class="flex flex-row h-full w-full overflow-x-hidden">
     <div class="flex flex-col flex-auto h-full p-6">
@@ -186,7 +186,7 @@
           <div class="ml-4" on:click={()=>{onEnter(true)}}>
             <button
               class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0">
-              <span>Send</span>
+              <span>{isSending?"AI is typing...":"Send"}</span>
               <span class="ml-2">
                 <svg class="w-4 h-4 transform rotate-45 -mt-px" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg">
