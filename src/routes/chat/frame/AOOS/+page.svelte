@@ -1,13 +1,27 @@
 <script>
-  import { page } from '$app/stores';
   import { browser } from '$app/environment';
   import { fade } from 'svelte/transition';
-  // if (browser && (!$page.data.pms.includes(new URL(location.href).hostname) || !$page.data.pms.includes(new URL(window.top.location.href).hostname))) {
-  //   location.href = "/error/toperror"
-  // };
+  import MarkdownIt from 'markdown-it';
+  import hljs from 'highlight.js';
+  import mkitdeflist from 'markdown-it-deflist';
+  let md = new MarkdownIt().use(mkitdeflist);
+  /*
+  {
+    highlight: function (str, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return hljs.highlight(str, { language: lang }).value;
+        } catch (__) { }
+      }
+
+      return ''; // use external default escaping
+    }
+  }
+  */
   let createBubble, setBubblel, createErrorBubble, onEnter, appendHistory, initHistory, resumeHistory, clearConversation, inputText = "";
   let initMessageList = ["Hi, I'm AOOS Ai Assistant, is there anything I can do to help?", "Hello! How can I help you?"];
   let isFocused = false;
+  let isSending = false;
   let initMessage = function () {
     return initMessageList[Math.floor(Math.random() * initMessageList.length)];
   }
@@ -15,6 +29,10 @@
     window.NomenMain = {
       wsSending: false
     };
+    let parser = (text) => { return md.render(text) }
+    let script_md_block = document.createElement("script");
+    script_md_block.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+    document.head.appendChild(script_md_block);
     let key = "NomenMainHistory";
     let ws = window.NomenMain.ws;
     if (!window.NomenMain.ws) {
@@ -33,14 +51,15 @@
           createBubble(0, { text: "", id: data.id });
           scrollListDown();
         } else if (data.message != "init" && !data.sys && data.id) {
-          setBubblel(data.id, { text: data.message });
+          setBubblel(data.id, { text: data.message }, true);
         } else if (data.sys && data.result && data.message == "finish") {
           NomenMain.wsSending = false;
+          isSending = false;
           appendHistory(data.result.text, data.result.id, 0);
         }
       };
       ws.onerror = function (e) {
-        createErrorBubble("Something went wrong, please check your console. ");
+        createErrorBubble("Something went wrong, please refresh");
         console.error(e);
       }
     }
@@ -61,12 +80,24 @@
           class="${["relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl",
           "relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"][side]} ${error ? "text-red-600" : ""}"
         >
-          <div id="${id}">${text}</div>
+        <div><div id="${id}"></div></div>
         </div>`;
       document.querySelector("#nomen-main-chat-body").appendChild(bubble);
+      let r = document.createElement("div");
+      r.innerHTML = parser(text);
+      document.getElementById(id).appendChild(r);
     };
-    window.setBubblel = setBubblel = function (id, { text }) {
-      document.getElementById(id).innerText = text;
+    window.setBubblel = setBubblel = function (id, { text }, parse = false) {
+      if (parse) {
+        let r = document.createElement("div");
+        r.innerHTML = parser(text);
+        document.getElementById(id).innerHTML = "";
+        document.getElementById(id).appendChild(r);
+        document.querySelectorAll("#nomen-main a").forEach(v=>v.style.color="#2c96d3");
+      } else {
+        document.getElementById(id).innerText = text;
+      }
+
     };
     window.createErrorBubble = createErrorBubble = function (error) {
       createBubble(0, { text: error, id: `err-${Date.now()}` }, true);
@@ -109,7 +140,7 @@
         if (!window.NomenMain.ws) {
           createErrorBubble("Connection lost, trying to reconnect... ");
           appendHistory(inputText.toString(), Date.now(), 1);
-          setTimeout(() => window.location.reload(), 5 * 1000)
+          setTimeout(() => window.location.reload(), 2 * 1000)
         } else {
           try {
             let pmdList = JSON.parse(localStorage.getItem(key)).history;
@@ -117,6 +148,7 @@
             ws.send(JSON.stringify({ message: inputText.toString(), parentMessageId: parentMessageId || undefined }));
             appendHistory(inputText.toString(), Date.now(), 1);
             NomenMain.wsSending = true;
+            isSending = true;
           } catch (err) {
             createErrorBubble(`Sorry, something went wrong, Error Message: ${err.message}`)
           }
@@ -133,14 +165,19 @@
   }
 </script>
 
-
-<div class="flex h-screen antialiased text-gray-800">
+<title>AOOS AI Assistant</title>
+<div class="flex h-screen antialiased text-gray-800" id="nomen-main">
   <div class="flex flex-row h-full w-full overflow-x-hidden">
     <div class="flex flex-col flex-auto h-full p-6">
       <div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
         <div class="flex flex-col h-full overflow-x-auto mb-4" id="nomen-main-list-body">
           <div class="flex flex-col h-full">
             <div class="" id="nomen-main-chat-body">
+              <style>
+                #nomen-main a {
+                  color: #2c96d3 !important;
+                }
+              </style>
               <div class="col-start-1 col-end-8 p-3 rounded-lg">
                 <div class="flex items-center flex-row">
                   <div
@@ -186,7 +223,7 @@
           <div class="ml-4" on:click={()=>{onEnter(true)}}>
             <button
               class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0">
-              <span>Send</span>
+              <span>{isSending?"AI is typing...":"Send"}</span>
               <span class="ml-2">
                 <svg class="w-4 h-4 transform rotate-45 -mt-px" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg">
