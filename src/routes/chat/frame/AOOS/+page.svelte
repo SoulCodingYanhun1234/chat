@@ -19,7 +19,7 @@
   }
   */
   let createBubble, setBubblel, createErrorBubble, onEnter, appendHistory, initHistory, resumeHistory, clearConversation, inputText = "";
-  let initMessageList = ["Hi, I'm AOOS Ai Assistant, is there anything I can do to help?", "Hello! How can I help you?"];
+  let initMessageList = ["Hi, I'm AOOS Ai Assistant, is there anything I can do to help?", "Hello! I'm AOOS Ai Assistant, how can I help you?"];
   let isFocused = false;
   let isSending = false;
   let initMessage = function () {
