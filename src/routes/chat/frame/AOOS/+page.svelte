@@ -1,6 +1,23 @@
 <script>
   import { browser } from '$app/environment';
   import { fade } from 'svelte/transition';
+  import MarkdownIt from 'markdown-it';
+  import hljs from 'highlight.js';
+  import mkitdeflist from 'markdown-it-deflist';
+  let md = new MarkdownIt().use(mkitdeflist);
+  /*
+  {
+    highlight: function (str, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return hljs.highlight(str, { language: lang }).value;
+        } catch (__) { }
+      }
+
+      return ''; // use external default escaping
+    }
+  }
+  */
   let createBubble, setBubblel, createErrorBubble, onEnter, appendHistory, initHistory, resumeHistory, clearConversation, inputText = "";
   let initMessageList = ["Hi, I'm AOOS Ai Assistant, is there anything I can do to help?", "Hello! How can I help you?"];
   let isFocused = false;
@@ -12,6 +29,10 @@
     window.NomenMain = {
       wsSending: false
     };
+    let parser = (text) => { return md.render(text) }
+    let script_md_block = document.createElement("script");
+    script_md_block.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+    document.head.appendChild(script_md_block);
     let key = "NomenMainHistory";
     let ws = window.NomenMain.ws;
     if (!window.NomenMain.ws) {
@@ -30,7 +51,7 @@
           createBubble(0, { text: "", id: data.id });
           scrollListDown();
         } else if (data.message != "init" && !data.sys && data.id) {
-          setBubblel(data.id, { text: data.message });
+          setBubblel(data.id, { text: data.message }, true);
         } else if (data.sys && data.result && data.message == "finish") {
           NomenMain.wsSending = false;
           isSending = false;
@@ -59,13 +80,24 @@
           class="${["relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl",
           "relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"][side]} ${error ? "text-red-600" : ""}"
         >
-          <div id="${id}"></div>
+        <div><div id="${id}"></div></div>
         </div>`;
       document.querySelector("#nomen-main-chat-body").appendChild(bubble);
-      document.getElementById(id).innerText=text;
+      let r = document.createElement("div");
+      r.innerHTML = parser(text);
+      document.getElementById(id).appendChild(r);
     };
-    window.setBubblel = setBubblel = function (id, { text }) {
-      document.getElementById(id).innerText = text;
+    window.setBubblel = setBubblel = function (id, { text }, parse = false) {
+      if (parse) {
+        let r = document.createElement("div");
+        r.innerHTML = parser(text);
+        document.getElementById(id).innerHTML = "";
+        document.getElementById(id).appendChild(r);
+        document.querySelectorAll("#nomen-main a").forEach(v=>v.style.color="#2c96d3");
+      } else {
+        document.getElementById(id).innerText = text;
+      }
+
     };
     window.createErrorBubble = createErrorBubble = function (error) {
       createBubble(0, { text: error, id: `err-${Date.now()}` }, true);
@@ -134,13 +166,18 @@
 </script>
 
 <title>AOOS AI Assistant</title>
-<div class="flex h-screen antialiased text-gray-800">
+<div class="flex h-screen antialiased text-gray-800" id="nomen-main">
   <div class="flex flex-row h-full w-full overflow-x-hidden">
     <div class="flex flex-col flex-auto h-full p-6">
       <div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
         <div class="flex flex-col h-full overflow-x-auto mb-4" id="nomen-main-list-body">
           <div class="flex flex-col h-full">
             <div class="" id="nomen-main-chat-body">
+              <style>
+                #nomen-main a {
+                  color: #2c96d3 !important;
+                }
+              </style>
               <div class="col-start-1 col-end-8 p-3 rounded-lg">
                 <div class="flex items-center flex-row">
                   <div
