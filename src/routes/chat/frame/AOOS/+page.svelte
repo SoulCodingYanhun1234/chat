@@ -93,7 +93,10 @@
         r.innerHTML = parser(text);
         document.getElementById(id).innerHTML = "";
         document.getElementById(id).appendChild(r);
-        document.querySelectorAll("#nomen-main a").forEach(v => v.style.color = "#2c96d3");
+        document.querySelectorAll("#nomen-main a").forEach(v => {
+          v.style.color = "#2c96d3";
+          v.setAttribute('target', '_top');
+        });
       } else {
         document.getElementById(id).innerText = text;
       }
@@ -166,10 +169,11 @@
 </script>
 
 <title>AOOS AI Assistant</title>
+<base target="_blank">
 <div class="flex h-screen antialiased text-gray-800" id="nomen-main">
   <div class="flex flex-row h-full w-full overflow-x-hidden">
     <div class="flex flex-col flex-auto h-full p-2">
-      <div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
+      <div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4" style="box-shadow: 1px 3px 10px 0px rgb(0 0 0 / 18%);">
         <div class="flex flex-col h-full overflow-x-auto mb-1" id="nomen-main-list-body">
           <div class="flex flex-col h-full">
             <div class="col-start-1 col-end-8 p-2 rounded-lg">
