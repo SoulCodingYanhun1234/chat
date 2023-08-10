@@ -57,7 +57,7 @@
         script_md_block.src =
             "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
         document.head.appendChild(script_md_block);
-        let key = "NomenMainHistory";
+        let key = "NomenMainHistory/Box3";
         let ws = window.NomenMain.ws;
         if (!window.NomenMain.ws) {
             ws = window.NomenMain.ws = new WebSocket(
@@ -223,9 +223,15 @@
                         NomenMain.wsSending = true;
                         isSending = true;
                     } catch (err) {
-                        createErrorBubble(
-                            `抱歉，出现了一些意外错误，请联系Nomen解决，错误信息: ${err.message}`
-                        );
+                        if(err.message.includes("Still in CONNECTING state")){
+                            createErrorBubble(
+                                `正在连接，请稍后尝试`
+                            );
+                        }else {
+                            createErrorBubble(
+                                `抱歉，出现了一些意外错误，请联系Nomen解决，错误信息: ${err.message}`
+                            );
+                        }
                     }
                 }
                 inputText = "";
