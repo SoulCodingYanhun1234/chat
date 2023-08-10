@@ -14,7 +14,8 @@
         initHistory,
         resumeHistory,
         clearConversation,
-        inputText = "";
+        inputText = "",
+        token="null";
     let initMessageList = [
         "Hi there! 我是Nomen，有什么帮得上的忙吗？",
         "你好！Nomen随时为你解答API疑问",
@@ -72,6 +73,12 @@
                     data = JSON.parse(res.data);
                 } catch (err) {
                     return;
+                }
+                if(data.id == 1 && data.sys){
+                    if(data.token) token = data.token;
+                }else if (data.id == -4 && data.sys){
+                    createErrorBubble(data.message);
+                    console.error(data.message);
                 }
                 if (data.message == "init" && data.sys) {
                     createBubble(0, { text: "", id: data.id });
@@ -217,6 +224,7 @@
                             JSON.stringify({
                                 message: inputText.toString(),
                                 parentMessageId: parentMessageId || undefined,
+                                token
                             })
                         );
                         appendHistory(inputText.toString(), Date.now(), 1);
