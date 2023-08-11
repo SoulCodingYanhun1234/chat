@@ -15,7 +15,7 @@
         resumeHistory,
         clearConversation,
         inputText = "",
-        token="null";
+        token = "null";
     let initMessageList = [
         "Hi there! 我是Nomen，有什么帮得上的忙吗？",
         "你好！Nomen随时为你解答API疑问",
@@ -74,11 +74,13 @@
                 } catch (err) {
                     return;
                 }
-                if(data.id == 1 && data.sys){
-                    if(data.token) token = data.token;
-                }else if (data.id == -4 && data.sys){
+                if (data.id == 1 && data.sys) {
+                    if (data.token) token = data.token;
+                } else if ((data.id == -4 || data.id == -6) && data.sys) {
                     createErrorBubble(data.message);
                     console.error(data.message);
+                    NomenMain.wsSending = false;
+                    isSending = false;
                 }
                 if (data.message == "init" && data.sys) {
                     createBubble(0, { text: "", id: data.id });
@@ -112,30 +114,26 @@
             let bubble = document.createElement("div");
             bubble.setAttribute(
                 "class",
-                `col-start-${[1, 6][side]} col-end-${
-                    [8, 13][side]
+                `col-start-${[1, 6][side]} col-end-${[8, 13][side]
                 } p-3 rounded-lg)`
             );
-            bubble.innerHTML = `<div class="flex items-center ${
-                ["flex-row", "justify-start flex-row-reverse"][side]
-            }">
+            bubble.innerHTML = `<div class="flex items-center ${["flex-row", "justify-start flex-row-reverse"][side]
+                }">
           <div
-            class="${
-                [
+            class="${[
                     "flex items-center justify-center h-10 w-10 rounded-full bg-main flex-shrink-0 text-amber-500 text-xs",
                     "",
                 ][side]
-            }"
+                }"
           >
             ${head !== undefined ? head : ["Nomen", ""][side]}
           </div>
           <div
-            class="${
-                [
+            class="${[
                     "relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl",
                     "relative mr-3 text-sm bg-amber-300 py-2 px-4 shadow rounded-xl",
                 ][side]
-            } ${error ? "text-red-600" : ""}"
+                } ${error ? "text-red-600" : ""}"
           >
           <div><div id="${id}"></div></div>
           </div>`;
@@ -231,11 +229,11 @@
                         NomenMain.wsSending = true;
                         isSending = true;
                     } catch (err) {
-                        if(err.message.includes("Still in CONNECTING state")){
+                        if (err.message.includes("Still in CONNECTING state")) {
                             createErrorBubble(
                                 `正在连接，请稍后尝试`
                             );
-                        }else {
+                        } else {
                             createErrorBubble(
                                 `抱歉，出现了一些意外错误，请联系Nomen解决，错误信息: ${err.message}`
                             );
@@ -262,20 +260,13 @@
 <div class="flex h-screen antialiased text-gray-800" id="nomen-main">
     <div class="flex flex-row h-full w-full overflow-x-hidden">
         <div class="flex flex-col flex-auto h-full p-2">
-            <div
-                class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4"
-                style="box-shadow: 1px 3px 10px 0px rgb(0 0 0 / 18%);"
-            >
-                <div
-                    class="flex flex-col h-full overflow-x-auto mb-1"
-                    id="nomen-main-list-body"
-                >
+            <div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4"
+                style="box-shadow: 1px 3px 10px 0px rgb(0 0 0 / 18%);">
+                <div class="flex flex-col h-full overflow-x-auto mb-1" id="nomen-main-list-body">
                     <div class="flex flex-col h-full">
                         <div class="col-start-1 col-end-8 p-2 rounded-lg">
                             <div class="flex items-center flex-row">
-                                <div
-                                    class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl text-gray-400"
-                                >
+                                <div class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl text-gray-400">
                                     <div>
                                         这是一个由ChatGPT3.5生成的文本，可能存在违规内容，如果出现意外的违规内容，请联系Nomen
                                     </div>
@@ -291,13 +282,10 @@
                             <div class="col-start-1 col-end-8 p-3 rounded-lg">
                                 <div class="flex items-center flex-row">
                                     <div
-                                        class="flex items-center justify-center h-10 w-10 rounded-full bg-main flex-shrink-0 text-amber-500 text-xs"
-                                    >
+                                        class="flex items-center justify-center h-10 w-10 rounded-full bg-main flex-shrink-0 text-amber-500 text-xs">
                                         Nomen
                                     </div>
-                                    <div
-                                        class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
-                                    >
+                                    <div class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
                                         <div>{initMessage()}</div>
                                     </div>
                                 </div>
@@ -305,11 +293,8 @@
                             <div class="col-start-1 col-end-8 p-3 rounded-lg">
                                 <div class="flex items-center flex-row">
                                     <div
-                                        class="flex items-center justify-center h-10 w-10 rounded-full bg-main flex-shrink-0 text-amber-500 text-xs"
-                                    />
-                                    <div
-                                        class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
-                                    >
+                                        class="flex items-center justify-center h-10 w-10 rounded-full bg-main flex-shrink-0 text-amber-500 text-xs" />
+                                    <div class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">
                                         <div>{@html parser(tipContent)}</div>
                                     </div>
                                 </div>
@@ -317,113 +302,58 @@
                         </div>
                     </div>
                 </div>
-                <div
-                    class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4"
-                >
+                <div class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
                     <div>
-                        <button
-                            class="flex items-center justify-center text-gray-400 hover:text-gray-600"
-                            on:click={clearConversation}
-                        >
-                            <svg
-                                class="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 48 48"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    clip-rule="evenodd"
-                                    d="M20 5.91406H28V13.9141H43V21.9141H5V13.9141H20V5.91406Z"
-                                    stroke="#333"
-                                    stroke-width="4"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M8 40H40V22H8V40Z"
-                                    fill="none"
-                                    stroke="#333"
-                                    stroke-width="4"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M16 39.8976V33.9141"
-                                    stroke="#333"
-                                    stroke-width="4"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M24 39.8977V33.8977"
-                                    stroke="#333"
-                                    stroke-width="4"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M32 39.8976V33.9141"
-                                    stroke="#333"
-                                    stroke-width="4"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                                <path
-                                    d="M12 40H36"
-                                    stroke="#333"
-                                    stroke-width="4"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
+                        <button class="flex items-center justify-center text-gray-400 hover:text-gray-600"
+                            on:click={clearConversation}>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 48 48"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M20 5.91406H28V13.9141H43V21.9141H5V13.9141H20V5.91406Z" stroke="#333"
+                                    stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M8 40H40V22H8V40Z" fill="none" stroke="#333" stroke-width="4"
+                                    stroke-linejoin="round" />
+                                <path d="M16 39.8976V33.9141" stroke="#333" stroke-width="4" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M24 39.8977V33.8977" stroke="#333" stroke-width="4" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M32 39.8976V33.9141" stroke="#333" stroke-width="4" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M12 40H36" stroke="#333" stroke-width="4" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
                         </button>
                     </div>
                     <div class="flex-grow ml-4">
                         <div class="relative w-full">
-                            <input
-                                type="text"
+                            <input type="text"
                                 class="flex w-full border rounded-xl focus:outline-none focus:border-amber-300 pl-4 h-10"
-                                placeholder="Input message"
-                                bind:value={inputText}
-                                on:keydown={(e) => {
-                                    if (e.code == "Enter" && isFocused && !isComposing) onEnter();
-                                }}
-                                on:focus={() => {
-                                    isFocused = true;
-                                }}
-                                on:blur={() => {
-                                    isFocused = false;
-                                }}
-                                on:compositionstart={handleCompositionStart}
-                                on:compositionend={handleCompositionEnd}
+                                placeholder="Input message" bind:value={inputText} on:keydown={(e)=> {
+                            if (e.code == "Enter" && isFocused && !isComposing) onEnter();
+                            }}
+                            on:focus={() => {
+                            isFocused = true;
+                            }}
+                            on:blur={() => {
+                            isFocused = false;
+                            }}
+                            on:compositionstart={handleCompositionStart}
+                            on:compositionend={handleCompositionEnd}
                             />
                         </div>
                     </div>
-                    <div
-                        class="ml-4"
-                        on:click={() => {
-                            onEnter(true);
+                    <div class="ml-4" on:click={()=> {
+                        onEnter(true);
                         }}
-                    >
-                        <button
-                            class="flex items-center justify-center bg-amber-500 hover:bg-amber-600 rounded-xl text-white px-4 py-1 flex-shrink-0"
                         >
+                        <button
+                            class="flex items-center justify-center bg-amber-500 hover:bg-amber-600 rounded-xl text-white px-4 py-1 flex-shrink-0">
                             <span />
                             <span class="p-1">
-                                <svg
-                                    class="w-4 h-4 transform rotate-45 -mt-px"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                                    />
+                                <svg class="w-4 h-4 transform rotate-45 -mt-px" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                 </svg>
                             </span>
                         </button>
