@@ -76,7 +76,7 @@
                 }
                 if (data.id == 1 && data.sys) {
                     if (data.token) token = data.token;
-                } else if ((data.id == -4 || data.id == -6) && data.sys) {
+                } else if ((data.id == -3 || data.id == -4 || data.id == -5 || data.id == -6) && data.sys) {
                     createErrorBubble(data.message);
                     console.error(data.message);
                     NomenMain.wsSending = false;
